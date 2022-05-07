@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        <p class="fs-4">{{ form.name.label }}</p><br>
+        {{ form.name(class="form-control") }}
+        {% for error in form.name.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+    <p>
+    <p class="fs-4"> {{ form.surname.label }}</p><br>
+        {{ form.surname(class="form-control") }}
+        {% for error in form.surname.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+    <p>
+        <p class="fs-4">{{ form.password.label }}</p><br>
+        {{ form.password(class="form-control") }}
+        {% for error in form.password.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+
+    {{ form.submit(type="submit", class="btn btn-primary") }}
+
+</form>
+
+{% endblock %}

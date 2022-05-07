@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br>
+<a href="/new_debt" class="btn btn-primary">Новый долг</a>
+<table class="table table-borderless table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Тэг долга</th>
+            <th scope="col">Тэг должника</th>
+            <th scope="col">Сумма долга</th>
+            <th scope="col">Группа долга</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(debtors | length) %}
+            <tr id="{{ debts[i].id }}">
+                <th scope="row">{{ debts[i].tag }}</th>
+                <td> {{users[i].username}} </td>
+                <td> {{debtors[i].sum}} </td>
+                <td> {{ groups[i].tag }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

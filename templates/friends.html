@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br>
+<h1 class="display-6">Ваши друзья</h1>
+
+{% for user in users %}
+
+<a href="/users/{{ user.id }}" class="fs-3 link-dark">{{ user.username }}</a><br>
+
+{% endfor %}
+
+{% endblock %}

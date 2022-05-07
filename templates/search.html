@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p class="fs-3"> По запросу <em>{{ searched }}</em> нашлось:</p>
+  <table class="table table-borderless">
+    <thead>
+      <tr>
+        <th scope="col">Долги</th>
+        <th scope="col">Должники</th>
+        <th scope="col">Группы</th>
+        <th scope="col">Пользователи</th>
+        <th scope="col">Друзья</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for i in range([debts | length, groups | length, debtors | length, users | length, friends | length] | max) %}
+          {% if not i > debts | length - 1 %}
+            <td><a href="/debts#{{ debts[i].id }}" class="dark-link">{{ debts[i].tag }}</a></td>
+          {% else %}
+            <td>&nbsp;</td>
+          {% endif %}
+
+          {% if not i > debtors | length - 1 %}
+          <td><a href="/debtors#{{ debtors[i].id }}" class="dark-link">{{ debtors_debts[debtors_debts_ids[i].debt_id].tag }} - {{ debtors[i].username }}</a></td>
+          {% else %}
+            <td>&nbsp;</td>
+          {% endif %}
+
+          {% if not i > groups | length - 1 %}
+          <td><a href="/groups#{{ groups[i].id }}" class="dark-link">{{ groups[i].tag }}</a></td>
+          {% else %}
+            <td>&nbsp;</td>
+          {% endif %}
+
+          {% if not i > users | length - 1 %}
+            <td><a href="/users/{{ users[i].id }}" class="link-dark">{{ users[i].username }}</a></td>
+          {% else %}
+            <td>&nbsp;</td>
+          {% endif %}
+
+          {% if not i > friends | length - 1 %}
+            <td><a href="/users/{{ friends[i].id }}" class="link-dark">{{ friends[i].username }}</a></td>
+          {% else %}
+            <td>&nbsp;</td>
+          {% endif %}
+      </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

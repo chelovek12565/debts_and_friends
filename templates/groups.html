@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br>
+<a class="btn btn-primary" href="/new_group">Новая группа</a>
+<br>
+<table class="table table-borderless table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Группа</th>
+            <th scope="col">Участники группы</th>
+            <th scope="col">&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(groups | length) %}
+
+            <tr>
+                <th><br>{{ groups[i].tag }}</th>
+                <td>{% for j in range(members[i] | length) %}
+                    {{ members[i][j].username }}<br>
+                    {% endfor %}
+                </td>
+                <td><br><a href="/leave_group/{{ groups[i].id }}" class="btn btn-outline-danger">Выйти</a></td>
+            </tr>
+
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

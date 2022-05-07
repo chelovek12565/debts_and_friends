@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Имя: </p></li>
+    <li class="list-inline-item">{{ user.name }}</li>
+</ul>
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Фамилия: </p></li>
+    <li class="list-inline-item">{{ user.surname }}</li>
+</ul>
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Логин: </p></li>
+    <li class="list-inline-item">{{ user.username }}</li>
+</ul>
+
+<a type="button" class="btn btn-outline-primary" href="/confirm">Редактировать профиль</a>
+<br><br>
+
+<a type="button" class="btn btn-danger" href="/logout">Выйти</a>
+{% endblock %}

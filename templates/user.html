@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Имя: </p></li>
+    <li class="list-inline-item">{{ user.name }}</li>
+</ul>
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Фамилия: </p></li>
+    <li class="list-inline-item">{{ user.surname }}</li>
+</ul>
+<ul class="list-inline">
+    <li class="list-inline-item"><p class="display-6">Логин: </p></li>
+    <li class="list-inline-item">{{ user.username }}</li>
+</ul>
+{% if not is_friend %}
+    <a href="/add_friend/{{ user.id }}" class="btn btn-primary">Добавить в друзья</a>
+{% else %}
+    <a href="/delete_friend/{{ user.id }}" class="btn btn-danger">Удалить из друзей</a>
+{% endif %}
+{% endblock %}

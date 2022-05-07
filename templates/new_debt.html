@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br>
+<h1 class="display-6">Новый долг</h1>
+<form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.name.label }}<br>
+        {{ form.name(class="form-control") }}
+        {% for error in form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.debt_tag.label }}<br>
+        {{ form.debt_tag(class="form-control") }}
+        {% for error in form.debt_tag.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.sum_.label }}<br>
+        {{ form.sum_(class="form-control") }}
+        {% for error in form.sum_.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </p>
+    <p>
+        {% for subfield in form.radio_field %}
+
+            {{ subfield }}
+            {{ subfield.label }}
+
+        {% endfor %}
+        {% for error in form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.tag.label }}<br>
+        {{ form.tag(class="form-control") }}
+        {% for error in form.tag.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+</form>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br>
+<h1 class="display-6">Новая группа</h1>
+<form method="POST" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.tag.label }}<br>
+        {{ form.tag(class="form-control") }}<br>
+        {% for error in form.tag.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+
+    <p>
+        <div data-bs-spy="scroll" class="scrollspy-example">
+
+        {% for field in form.select %}
+            {{ field.hidden_tag() }}
+    {{ field.boolean(class="form-check-input") }} <label class="form-check-label">{{ field.label_data.data }}</label><br>
+        {% endfor %}
+        </div>
+        {% for error in form.select.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    </p>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    {% if alert %}
+        <div class="alert alert-danger" role="alert">
+            {{ alert }}
+        </div>
+    {% endif %}
+</form>
+
+{% endblock %}

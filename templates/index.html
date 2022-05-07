@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <table class="table table-borderless" align="center">
+        <thead>
+        <tr>
+            <th scope="col"><h3 class="display-6">Долги</h3></th>
+            <th scope="col"><h3 class="display-6">Должники</h3></th>
+            <th scope="col"><h3 class="display-6">Группы</h3></th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for i in range([debts | length, debtors_debts | length, groups | length] | max) %}
+            <tr>
+                    {% if i > debts | length - 1 %}
+                        <td>&nbsp;</td>
+                    {% else %}
+                        <td><a href="/debts#{{debts[i].id}}" class="link-dark"> {{ debts[i].tag }} </a></td>
+                    {% endif %}
+
+                    {% if i > debtors_debts | length - 1 %}
+                        <td>&nbsp;</td>
+                    {% else %}
+                <td><a class="link-dark" href="/debtors#{{ debtors_debts[i].id }}">{{ debtors_debts[i].tag }} - {{ debtors_users[i].username }}</a></td>
+                    {% endif %}
+
+                    {% if i > groups | length - 1 %}
+                        <td>&nbsp;</td>
+                    {% else %}
+                        <td>{{ groups[i].tag }}</td>
+                    {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+<br>
+<p align="center" class="display-6"> Добро пожаловать на сайт <em>Debts & Friends</em></p>
+<br>
+<p class="fs-4">Этот сайт создан для помощи за контролем ваших долгов. Добавляйте сюда свои долги, чтобы легче их
+систематизировать и никогда не забыть. Вот вам краткий маршрут по сайту:</p><br>
+<p class="fs-2 lead"><em>Группы</em></p>
+<p class="fs-4">Создавайте группы из своих друзей. Группы помогут вам удобнее выбирать людей при создании долга. С их
+помощью вы сможете выбрать сразу всех её участников, причём сумма долга распределяется между ними равномерно. Здесь
+и создаются группы</p>
+<br>
+<p class="fs-2 lead"><em>Друзья</em></p>
+<p class="fs-4">Эта вкладка поможет вам в управлении своими друзьями. Добавление новых друзей происходит через поиск:
+введите логин своего друга и добавьте его, найдя его в колонке пользователей</p>
+<br>
+<p class="fs-2 lead"><em>Долги</em></p>
+<p class="fs-4">Вкладка со всеми вашими долгами. Здесь вы можете увидеть всю информацию о долге и закрыть его</p>
+<br>
+<p class="fs-2 lead"><em>Должники</em></p>
+<p class="fs-4">Выводит всю информацию о ваших должниках. Содержит кнопку для создания долгов</p>
+<br>
+<p class="fs-2 lead" align="center">Начните работу с сайтом, <a href="/new_account" class="link-dark">создав</a> или <a href="/login" class="link-dark">войдя</a> в аккаунт</p>
+<br><br><br>
+{% endif %}
+{% endblock %}
