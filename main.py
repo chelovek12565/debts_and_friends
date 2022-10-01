@@ -5,6 +5,7 @@ from data.users_api import UserResource, OneUserResource
 from data.debtors_api import DebtorResource, OneDebtorResource
 from data.groups_api import GroupResource, OneGroupResource
 from flask_wtf import FlaskForm
+import datetime
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, RadioField, IntegerField, Label, FieldList, FormField
 from wtforms.validators import DataRequired
 from flask import request, render_template, redirect
@@ -82,11 +83,10 @@ class NewUserForm(FlaskForm):
     name = StringField('Имя', validators=[DataRequired()])
     surname = StringField('Фамилия', validators=[DataRequired()])
     username = StringField('Логин', validators=[DataRequired()])
-    password = StringField('Пароль', validators=[DataRequired()])
+    password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Создать')
 
 
-# TODO
 class SelectFrom(FlaskForm):
     label_data = StringField()
     boolean = BooleanField('bool')
@@ -180,12 +180,16 @@ def add_friend(user_id):
     print(friend.to_dict())
 
     friend_2 = Friend()
+    notification = Friend_Notification()
+    notification.sender_id = current_user.id
+    notification.receiver_id = user_id
+    notification.time = datetime.datetime.now()
+    db_sess.add(notification)
     friend_2.user_id = user_id
     friend_2.friend_id = current_user.id
     db_sess.add(friend_2)
 
     db_sess.commit()
-    print(friend_2.to_dict())
     return redirect(f'/users/{user_id}')
 
 
@@ -207,7 +211,6 @@ def new_group(): # TODO
     db_sess = db_session.create_session()
     friends = db_sess.query(Friend).filter(Friend.user_id == current_user.id).all()
     users = list(map(lambda x: db_sess.query(User).get(x.friend_id), friends))
-    print(users)
     a = []
     for user in users:
         a.append({'label_data': user.username})
@@ -231,11 +234,21 @@ def new_group(): # TODO
         group.admin_id = current_user.id
         db_sess.add(group)
         db_sess.commit()
-        users.append(current_user)
+        gm = GroupMember()
+        gm.group_id = group.id
+        gm.user_id = current_user.id
+        db_sess.add(gm)
+        db_sess.commit()
         for i in users:
             gm = GroupMember()
             gm.group_id = group.id
             gm.user_id = i.id
+            notification = Group_Notification()
+            notification.sender_id = current_user.id
+            notification.receiver_id = i.id
+            notification.group_id = group.id
+            notification.time = datetime.datetime.now()
+            db_sess.add(notification)
             db_sess.add(gm)
             db_sess.commit()
         return redirect('/groups')
@@ -297,34 +310,45 @@ def new_debt():
             db_sess.add(debt)
             db_sess.commit()
 
+            notification = Debt_Notification()
+            notification.debt_id = debt.id
+            notification.sender_id = current_user.id
+            notification.receiver_id = user.id
+            notification.time = datetime.datetime.now()
             debtor = Debtor()
             debtor.user_id = user.id
             debtor.debt_id = debt.id
             debtor.sum = form.sum_.data
             debtor.collector_id = current_user.id
-            db_sess.add(debtor)
+            db_sess.add(debtor, notification)
             db_sess.commit()
 
         elif int(form.radio_field.data) == 1:
             group = db_sess.query(Group).filter(Group.tag == form.tag.data).first()
             members = db_sess.query(GroupMember).filter(GroupMember.group_id == group.id, GroupMember.user_id != current_user.id).all()
-            del members[0]
             user_ids = list(map(lambda x: x.user_id, members))
             debt = Debt()
             debt.collector_id = current_user.id
             debt.name = form.name.data
             debt.tag = form.debt_tag.data
             debt.group = group.id
+            debt.time = datetime.datetime.now()
             db_sess.add(debt)
             db_sess.commit()
             one_user_sum = form.sum_.data // len(user_ids)
             for i in user_ids:
                 debtor = Debtor()
+                notification = Debt_Notification()
+                notification.sender_id = current_user.id
+                notification.receiver_id = i
+                notification.debt_id = debt.id
+                notification.time = datetime.datetime.now()
                 debtor.user_id = i
                 debtor.debt_id = debt.id
                 debtor.sum = one_user_sum
                 debtor.collector_id = current_user.id
                 db_sess.add(debtor)
+                db_sess.add(notification)
                 db_sess.commit()
 
         return redirect('/debtors')
@@ -433,7 +457,8 @@ def index():
                            groups=groups,
                            debtors_users=debtors_users,
                            debtors=debtors,
-                           debtors_debts=debtors_debts)
+                           debtors_debts=debtors_debts,
+                           title='Главная')
 
 
 @app.route('/account')
@@ -469,8 +494,16 @@ def login():
 
     if not current_user.is_authenticated:
         return render_template('login.html', title='Авторизация', form=form, alert=None)
+    else:
+        return redirect('/account')
+
+
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    # port = int(os.environ.get("PORT", 5000))
+    # app.run(host='0.0.0.0', port=port)
+    app.run()

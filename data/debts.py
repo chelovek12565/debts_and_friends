@@ -11,4 +11,4 @@ class Debt(SqlAlchemyBase, SerializerMixin):
     name = sqlalchemy.Column(sqlalchemy.String)
     tag = sqlalchemy.Column(sqlalchemy.String, unique=True)
     group = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('groups.id'), nullable=True)
-    # debtor = orm.relation('Debtor')
+    time = sqlalchemy.Column(sqlalchemy.DateTime)
