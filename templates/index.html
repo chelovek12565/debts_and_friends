@@ -2,38 +2,23 @@
 
 {% block content %}
 {% if current_user.is_authenticated %}
-    <table class="table table-borderless" align="center">
-        <thead>
-        <tr>
-            <th scope="col"><h3 class="display-6">Долги</h3></th>
-            <th scope="col"><h3 class="display-6">Должники</h3></th>
-            <th scope="col"><h3 class="display-6">Группы</h3></th>
-        </tr>
-        </thead>
-        <tbody>
-            {% for i in range([debts | length, debtors_debts | length, groups | length] | max) %}
-            <tr>
-                    {% if i > debts | length - 1 %}
-                        <td>&nbsp;</td>
-                    {% else %}
-                        <td><a href="/debts#{{debts[i].id}}" class="link-dark"> {{ debts[i].tag }} </a></td>
-                    {% endif %}
+    {% for noti in notifications %}
+        <div class="card">
+            {% if noti["type"] == "friend" %}
+                <h5 class="card-header text-white" style="background-color: #75c0e0">
+                  Приглашение в друзья
+                </h5>
+            {% elif noti["type"] == "group" %}
+                <h5 class="card-header text-white" style="background-color: #b676b1">
+                  Приглашение в группу
+                </h5>
+            {% else %}
+                <h5 class="card-header text-white" style="background-color: #fecf6a">
+                  Новый долг
+                </h5>
 
-                    {% if i > debtors_debts | length - 1 %}
-                        <td>&nbsp;</td>
-                    {% else %}
-                <td><a class="link-dark" href="/debtors#{{ debtors_debts[i].id }}">{{ debtors_debts[i].tag }} - {{ debtors_users[i].username }}</a></td>
-                    {% endif %}
-
-                    {% if i > groups | length - 1 %}
-                        <td>&nbsp;</td>
-                    {% else %}
-                        <td>{{ groups[i].tag }}</td>
-                    {% endif %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        </div>
+    {% endfor %}
 {% else %}
 <br>
 <p align="center" class="display-6"> Добро пожаловать на сайт <em>Debts & Friends</em></p>

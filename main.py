@@ -6,7 +6,8 @@ from data.debtors_api import DebtorResource, OneDebtorResource
 from data.groups_api import GroupResource, OneGroupResource
 from flask_wtf import FlaskForm
 import datetime
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, RadioField, IntegerField, Label, FieldList, FormField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, RadioField, IntegerField, Label, FieldList, \
+    FormField
 from wtforms.validators import DataRequired
 from flask import request, render_template, redirect
 from flask_restful import Api
@@ -14,6 +15,7 @@ from flask_login import LoginManager, login_user, current_user, login_required, 
 from data.__all_models import *
 
 from data import db_session
+
 db_session.global_init('data/db/db_main.db')
 app = flask.Flask(__name__)
 api = Api(app)
@@ -31,12 +33,28 @@ api.add_resource(UserResource, '/api/users')
 api.add_resource(OneUserResource, '/api/users/<int:user_id>')
 
 app.config['SECRET_KEY'] = 'ultra_mega_secret_key'
+format = "%Y-%m-%d %H:%M:%S"
 
 
 def check_account():
     if not int(request.cookies.get('account_id', 0)):
         return False
     return True
+
+
+def date_to_int(str_date: str):
+    date, time = str_date.split()
+    year, month, day = date.split('-')
+    hour, minutes, seconds = time.split(':')
+    return int(seconds) * 1 + int(minutes) * 100 + int(hour) * 10000 + int(day) * 1000000 + int(month) * 100000000 + \
+           int(year) * 1000000000000
+
+
+def notif_proc(notifications, type):
+    for i in range(len(notifications)):
+        notifications[i]['type'] = type
+        notifications[i]['time'] = date_to_int(notifications[i]['time'])
+    return notifications
 
 
 class MyBooleanField(BooleanField):
@@ -75,7 +93,7 @@ class NewDebtForm(FlaskForm):
     debt_tag = StringField('Тэг долга', validators=[DataRequired()])
     sum_ = IntegerField('Сумма долга', validators=[DataRequired()])
     radio_field = RadioField('Выбор', choices=[(1, 'Группа'), (2, 'Пользователь')], validators=[DataRequired()])
-    tag = StringField('Тэг / логин',  validators=[DataRequired()])
+    tag = StringField('Тэг / логин', validators=[DataRequired()])
     submit = SubmitField('Создать')
 
 
@@ -107,7 +125,8 @@ class SearchForm(FlaskForm):
 @login_required
 def leave_group(group_id):
     db_sess = db_session.create_session()
-    member = db_sess.query(GroupMember).filter(GroupMember.group_id == group_id, GroupMember.user_id == current_user.id).first()
+    member = db_sess.query(GroupMember).filter(GroupMember.group_id == group_id,
+                                               GroupMember.user_id == current_user.id).first()
     db_sess.delete(member)
     db_sess.commit()
     return redirect('/groups')
@@ -139,17 +158,21 @@ def search():
         debts_ids = list(map(lambda x: x.debt_id, debtors_as_me))
         debts = db_sess.query(Debt).filter(Debt.tag.like(f'{searched}%'), Debt.id.in_(debts_ids)).all()
 
-        debtors_debts = db_sess.query(Debt).filter(Debt.collector_id == current_user.id, Debt.tag.like(f'{searched}%')).all()
-        debtors_debts_ids = db_sess.query(Debtor).filter(Debtor.debt_id.in_(list(map(lambda x: x.id, debtors_debts)))).all()
+        debtors_debts = db_sess.query(Debt).filter(Debt.collector_id == current_user.id,
+                                                   Debt.tag.like(f'{searched}%')).all()
+        debtors_debts_ids = db_sess.query(Debtor).filter(
+            Debtor.debt_id.in_(list(map(lambda x: x.id, debtors_debts)))).all()
         debtors = list(map(lambda x: db_sess.query(User).get(x.user_id), debtors_debts_ids))
         debtors_debts = dict(list(map(lambda x: (x.id, x), debtors_debts)))
         group_members_as_me = db_sess.query(GroupMember).filter(GroupMember.user_id == current_user.id).all()
-        groups = db_sess.query(Group).filter(Group.id.in_(list(map(lambda x: x.group_id, group_members_as_me))), Group.tag.like(f'{searched}%')).all()
+        groups = db_sess.query(Group).filter(Group.id.in_(list(map(lambda x: x.group_id, group_members_as_me))),
+                                             Group.tag.like(f'{searched}%')).all()
 
         users = db_sess.query(User).filter(User.username.like(f'{searched}%'), User.id != current_user.id).all()
 
         friends = db_sess.query(Friend).filter(Friend.user_id == current_user.id).all()
-        friends_users = db_sess.query(User).filter(User.id.in_(list(map(lambda x: x.friend_id, friends))), User.username.like(f'{searched}%')).all()
+        friends_users = db_sess.query(User).filter(User.id.in_(list(map(lambda x: x.friend_id, friends))),
+                                                   User.username.like(f'{searched}%')).all()
 
         return render_template('search.html', form=form, searched=searched,
                                debts=debts, debtors_debts=debtors_debts
@@ -163,7 +186,8 @@ def search():
 def user_page(user_id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).get(user_id)
-    is_friend = bool(db_sess.query(Friend).filter(Friend.user_id == current_user.id, Friend.friend_id == user_id).first())
+    is_friend = bool(
+        db_sess.query(Friend).filter(Friend.user_id == current_user.id, Friend.friend_id == user_id).first())
     return render_template('user.html', title=f'Пользователь {user.username}', user=user, is_friend=is_friend)
 
 
@@ -207,7 +231,7 @@ def delete_friend(user_id):
 
 
 @app.route('/new_group', methods=['GET', 'POST'])
-def new_group(): # TODO
+def new_group():
     db_sess = db_session.create_session()
     friends = db_sess.query(Friend).filter(Friend.user_id == current_user.id).all()
     users = list(map(lambda x: db_sess.query(User).get(x.friend_id), friends))
@@ -261,7 +285,8 @@ def groups_page():
         return render_template('error.html', title='Ошибка', error='Вы не вошли в аккаунт')
     db_sess = db_session.create_session()
     groups = db_sess.query(Group).filter(Group.id.in_(list(map(lambda x: x.group_id, db_sess.query(GroupMember).
-                                                               filter(GroupMember.user_id == current_user.id).all())))).all()
+                                                               filter(
+        GroupMember.user_id == current_user.id).all())))).all()
     members_ids = list(map(lambda x: db_sess.query(GroupMember).filter(GroupMember.group_id == x.id).all(), groups))
     members = [list(map(lambda x: db_sess.query(User).get(x.user_id), i)) for i in members_ids]
     return render_template('groups.html', title='Группы', groups=groups, members=members)
@@ -325,7 +350,8 @@ def new_debt():
 
         elif int(form.radio_field.data) == 1:
             group = db_sess.query(Group).filter(Group.tag == form.tag.data).first()
-            members = db_sess.query(GroupMember).filter(GroupMember.group_id == group.id, GroupMember.user_id != current_user.id).all()
+            members = db_sess.query(GroupMember).filter(GroupMember.group_id == group.id,
+                                                        GroupMember.user_id != current_user.id).all()
             user_ids = list(map(lambda x: x.user_id, members))
             debt = Debt()
             debt.collector_id = current_user.id
@@ -435,29 +461,36 @@ def load_user(user_id):
     return db_sess.query(User).get(user_id)
 
 
-@app.route('/')
+@app.route('/') # TODO
 @app.route('/index')
 def index():
+    global format
     db_sess = db_session.create_session()
     if current_user.is_authenticated:
-        # Получение долгов пользователя
-        debts = db_sess.query(Debt).filter(Debt.id.in_(list(map(lambda x: x.debt_id, db_sess.query(Debtor).
-                                                                filter(Debtor.user_id == current_user.id).all())))).all()
-        # Получение должников пользователя
-        debtors = db_sess.query(Debtor).filter(Debtor.collector_id == current_user.id).all()
-        user_ids = list(map(lambda x: x.user_id, debtors))
-        debtors_debts = list(map(lambda y: db_sess.query(Debt).get(y), list(map(lambda x: x.debt_id, debtors))))
-        debtors_users = list(map(lambda x: db_sess.query(User).get(x), user_ids))
-        groups = db_sess.query(Group).filter(Group.id.in_(list(map(lambda x: x.group_id, db_sess.query(GroupMember).
-                                                     filter(GroupMember.user_id == current_user.id).all())))).all()
+        friend_notifications = list(map(lambda x: x.to_dict(), db_sess.query(Friend_Notification).filter(
+            Friend_Notification.receiver_id == current_user.id).all()))
+        debt_notifications = list(map(lambda x: x.to_dict(), db_sess.query(Debt_Notification).filter(
+            Debt_Notification.receiver_id == current_user.id).all()))
+        group_notifications = list(map(lambda x: x.to_dict(), db_sess.query(Group_Notification).filter(
+            Group_Notification.receiver_id == current_user.id).all()))
+        people_ids = {}
+        notifications = []
+        notifications.extend(notif_proc(friend_notifications, 'friend'))
+        notifications.extend(notif_proc(debt_notifications, 'debt'))
+        notifications.extend(notif_proc(group_notifications, 'group'))
+        current_time = date_to_int(datetime.datetime.now().strftime(format))
+        notifications = sorted(notifications, key=lambda x: -x['time'])
+        for i in notifications:
+            if i.sender_id not in people_ids.keys():
+                user = db_sess.query(User).get(i.sender_id)
+                people_ids[i.sender_id] = user.name + ' ' + user.surname
+
     else:
-        debts, debtors, groups, debtors_debts, debtors_users = None, None, None, None, None
+        notifications, people_ids, current_time = None, None, None
     return render_template('index.html',
-                           debts=debts,
-                           groups=groups,
-                           debtors_users=debtors_users,
-                           debtors=debtors,
-                           debtors_debts=debtors_debts,
+                           notifications=notifications,
+                           people_ids=people_ids,
+                           current_time=current_time,
                            title='Главная')
 
 
