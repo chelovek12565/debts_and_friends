@@ -16,7 +16,7 @@ from data.__all_models import *
 
 from data import db_session
 
-db_session.global_init('data/db/db_main.db')
+db_session.global_init('./data/db/db_main.db')
 app = flask.Flask(__name__)
 api = Api(app)
 
@@ -481,9 +481,9 @@ def index():
         current_time = date_to_int(datetime.datetime.now().strftime(format))
         notifications = sorted(notifications, key=lambda x: -x['time'])
         for i in notifications:
-            if i.sender_id not in people_ids.keys():
-                user = db_sess.query(User).get(i.sender_id)
-                people_ids[i.sender_id] = user.name + ' ' + user.surname
+            if i['sender_id'] not in people_ids.keys():
+                user = db_sess.query(User).get(i['sender_id'])
+                people_ids[i['sender_id']] = user.name + ' ' + user.surname
 
     else:
         notifications, people_ids, current_time = None, None, None
